@@ -1,0 +1,122 @@
+#
+# Pattern file
+#
+# contains Pattern => Style pairs.
+# Add multiple patterns into one anonymous ARRAY ref. The last item should
+# be the style to be used. 
+# If multiple capture groups are defined Sytles can be listed in a \@.
+# If no capture group in PRE, then use the whole pattern matched
+# Items can be Regexp or string. String will be converted Regexp soon.
+#
+# TODO if refereced style is a CODE ref, call it with the matched string
+#      and PRE. ??? Sub return the Style
+#
+
+# Volume name may contain several characters
+# Maybe use http://perldoc.perl.org/perlretut.html#Defining-named-patterns
+# Depending on op.sys. Under Cygwin \ can be used. On Unix only /
+
+#my $VOL = '[A-Za-z_\.\-0-9:\\/{},]';
+#print "$^O\n"; Is $^O "cygwin" or use uname to get underlying op.sys?
+my $VOL = '[-\w\d./{},:\\\\]'; # [:\] windows specific, [{},] - ???
+my $SIZE = '(?<!\d)(?:\d{1,3}(?:,\d{3})+|\d{2,3}|[1-9])(?!\d)';
+my $SIZE_NOT_0 = '(?<!\d)(?:\d{1,3}(?:,\d{3})+|\d{2,3}|[1-9])(?!\d)';
+# TODO Adjust to local (or server) NLS settings
+my $DATE = '(?<!\d)\d\d/\d\d/\d{4} \d\d:\d\d:\d\d(?<!\d)';
+
+[
+  # errors and warnings
+  qr/^AN[ER]\d{4}E.*/ => 'ERROR',
+  qr/^ANR\d{4}W.*/ => 'WARN',
+
+  # sessions
+  'MediaW' => 'ERROR',
+  [ 'Waiting for multiple mount points in device class \w*',
+    'Waiting for mount point in device class \w*',
+    'Waiting for mount of output volume \w*',
+    'Waiting for mount of input volume \w*'
+  ] => 'WARN',
+
+  # mounts
+  [ 'RESERVED',
+    'DISMOUNTING'
+  ] => 'WARN',
+  'WAITING FOR VOLUME' => 'ERROR',
+
+  # PATHs
+  'ONL=NO' => 'ERROR',
+
+  # message based highlighting v3
+  'Last Full Volume\t(\w{6,8})\t' => 'INFO',
+
+  # VOLUME
+  [ 
+    '*g*[Vv]olume(?:\(s\))?:?\s('.$VOL.'+)',
+    #'Current output volume: ('.$VOL.'+)\.',
+    #'Current output volume\(s\): ('.$VOL.'+)\.',
+    #'Current input volume: ('.$VOL.'+)\.',
+    #'Waiting for access to input volume ('.$VOL.'+) \(\d+ seconds\)\.',
+
+    #'^ANR8468I \w+ volume ('.$VOL.'+) dismounted from drive',
+    #'^ANR8336I Verifying label of \w+ volume ('.$VOL.'+) in drive',
+    #'^ANR8337I \w+ volume ('.$VOL.'+) mounted in drive',
+
+    #'^ANR0510I Session \d+ opened input volume ('.$VOL.'+)\.',
+    #'^ANR0511I Session \d+ opened output volume ('.$VOL.'+)\.',
+    #'^ANR0512I Process \d+ opened input volume ('.$VOL.'+)\.',
+    #'^ANR0513I Process \d+ opened output volume ('.$VOL.'+)\.',
+
+    #'^ANR0514I Session \d+ closed volume ('.$VOL.'+)\.',
+    #'^ANR0515I Process \d+ closed volume ('.$VOL.'+)\.',
+
+    #'^ANR1157I Removable volume ('.$VOL.'+) is required for move process\.',
+    #'^ANR1228I Removable volume ('.$VOL.'+) is required for storage pool backup\.',
+
+    #'^ANR1140I Move data process started for volume ('.$VOL.'+) ',
+    #'^ANR1141I Move data process ended for volume ('.$VOL.'+)\.',
+
+    #'^ANR8337I \w+ volume ('.$VOL.'+) mounted in drive ',
+
+    #'^ANR8329I .+ volume ('.$VOL.'+) is mounted',
+    #'^ANR8330I .+ volume ('.$VOL.'+) is mounted',
+    #'^ANR8331I .+ volume ('.$VOL.'+) is mounted',
+
+    #'^ANR1360I Output volume ('.$VOL.'+) opened ',
+    #'^ANR1361I Output volume ('.$VOL.'+) closed\.',
+
+    #'^ANR8325I Dismounting volume ('.$VOL.'+)',
+    #'^ANR8340I \w+ volume ('.$VOL.'+) mounted\.',
+    #'^ANR8341I End-of-volume reached for \w+ volume ('.$VOL.'+)\.',
+
+    #'^ANR8810I Volume ('.$VOL.'+) has been labeled in library',
+    #'^ANR9791I Volume ('.$VOL.'+) in library \w+ ownership is changing from',
+
+    #'^ANR1340I Scratch volume ('.$VOL.'+) is now defined in storage pool ',
+    #'^ANR1341I Scratch volume ('.$VOL.'+) has been deleted from storage pool ',
+    #'Volume ('.$VOL.'+) \(storage pool ',
+  ] => INFO,
+
+  [ 'Examined (\d+) objects, deleting',
+    'objects, deleting (\d+) backup objects,',
+    'backup objects, (\d+) archive objects,',
+    'Full backup: (\d+) pages of ',
+    'Incremental backup: (\d+) pages of ',
+    'pages of (\d+) backed up\.',
+  ] => 'SIZE',
+
+  # ERROR if not 0
+  'Unreadable Bytes: ('.$SIZE_NOT_0.')\.' => 'BAD_SIZE',
+
+  #### Test #################################
+  [ 'Bytes(?: Backed Up)?: ('.$SIZE.')',
+    '\(bytes\): ('.$SIZE.')',
+  ] => 'SIZE_DEB',
+
+  '^ANR\d{4}E' => 'ERR_CODE',
+  '^ANR\d{4}W' => 'WRN_CODE',
+  '^ANR\d{4}I' => 'INF_CODE',
+
+  '*g*[Bb]ytes?' => 'DEBUG', # Multiple
+  '*g*[Ff]iles?' => 'DEBUG', # Multiple
+];
+

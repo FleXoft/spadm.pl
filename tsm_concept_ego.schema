@@ -1,0 +1,38 @@
+#
+# Color schema file
+#
+
+{ 
+# TODO Remove DEFAULT? Build from the attributes and colorvalidate
+# TODO Load from file
+# FG, BG set of values; others bool
+# If now HASH ref, defines an alias to other
+  DEFAULT_ERROR => { # For multi capt.group regexps
+    BG => 'bright_red',
+    FG => 'bright_yellow',
+    BOLD => 1,
+  },
+  INFO         => { FG => 'green',  BOLD => 1 },
+  WARN         => { FG => 'cyan', BOLD => 1 }, # was yellow
+  ERROR        => { FG => 'red',    BOLD => 1 },
+
+  SIZE         => 'WARN',
+  SIZE_DEB     => { UNDERLINE => 1 },
+  BAD_SIZE     => 'ERROR',
+  SESSION      => 'WARN',
+  SESSION_BANG => 'ERROR',
+  MOUNT        => 'WARN',
+  MOUNT_BANG   => 'ERROR',
+
+  GREP         => { FG => 'white', BOLD => 1 },
+  DEBUG        => { FG => 'bright_blue',  BOLD => 1 },
+
+  # XXX ITALIC: Not working on xterm on Linux
+  #   Invalid attribute name italic at ./colorize_concept_ego.pl line 434.
+  #   On Cygwin on urxvt works.
+  # XXX BLINK:
+  #   On Cygwin on urxvt BLINK not works if BG defined. On Linux xterm works
+  ERR_CODE     => { FG => 'yellow', BG => 'red' }, # ITALIC => 1 },
+  WRN_CODE     => { FG => 'red', BG => 'yellow', ITALIC => 1 },
+  INF_CODE     => { FG => 'white', BG => 'bright_black', BLINK => 1, ITALIC => 1 },
+};
